@@ -15,9 +15,15 @@ from the right-hand drawer.
 - Type a question using the app's fixed keyboard; its keys are diverted to
   the companion input only while that panel is open. Questions never become
   NetHack gameplay commands. Esc closes the panel.
-- Tap "Ask NetHackWiki" (or press Enter) to search NetHackWiki's MediaWiki
-  search endpoint over HTTPS. The search shows up to three matching page
-  titles and short attributed snippets. Tap a title to open the original.
+- Tap "Ask NetHackWiki" (or press Enter) to search NetHackWiki over HTTPS.
+  Results open in a wider, scrollable pop-out (80% screen width) over the
+  dungeon, rather than cramped into the narrow inventory sidebar. Close
+  it to return to the question and game without changing any gameplay.
+- Up to three source-linked articles appear in the window. The app requests
+  rendered plain-text article introductions via MediaWiki TextExtracts, so
+  raw wiki templates such as {{potion}} are not shown as summaries.
+  If the wiki lacks TextExtracts, article links remain available without
+  making up a description.
 - Toggle "In-world" versus "Factual advice". In-world mode adds a brief
   role-flavored introduction. Factual mode presents the source results directly.
 - Auto-detect the character's role using the character's rank in status
@@ -71,8 +77,10 @@ Android tablet yet.
    Also test the drawer's "Dungeon Companion (Wiki)" entry.
 4. Test a query such as "healing potion" using the fixed keyboard;
    the game must not move or interpret these letters as commands.
-5. Confirm wiki results are either linked with short excerpts, or the
-   expected browser fallback appears (no fabricated advice).
+5. Confirm results appear in a larger pop-out window with readable text,
+   linked sources and scroll. Close and reopen via "View wiki results".
+   If plain text is unavailable, article links must remain but no raw
+   template fragments or invented descriptions should appear.
 6. Test "In-world"/"Factual advice"; change character role manually, then
    test auto detection from the native character rank.
 7. Tap wiki source and licensing link, press Esc to close the companion,
