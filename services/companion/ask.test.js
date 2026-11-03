@@ -100,7 +100,7 @@ test('grounded response passes only whitelisted status and wiki sources', async 
     assert.equal(body.model, process.env.OPENAI_MODEL || 'gpt-5.4-mini');
     assert.equal(JSON.stringify(body).includes('Guy'), false);
     assert.equal(JSON.stringify(body).includes('sword'), false);
-    assert.equal(JSON.stringify(body).includes('"hp":14'), true);
+    assert.equal(body.input[0].content.includes('"hp":14'), true);
   } finally {
     global.fetch = originalFetch;
     if (previousKey === undefined) delete process.env.OPENAI_API_KEY;
