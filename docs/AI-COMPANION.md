@@ -52,7 +52,11 @@ Most wiki pages are CC BY-SA 3.0; individual media and NetHack source-code
 pages can have other license terms. The app displays short linked previews
 and does not package an offline article archive.
 
-API: https://nethackwiki.com/w/api.php (MediaWiki list=search).
+API: https://nethackwiki.com/api.php (MediaWiki list=search).
+The previous /w/api.php endpoint redirects to this canonical address,
+and the Android client intentionally does not follow HTTP redirects.
+Connection errors now distinguish HTTP status (including 403 and redirects)
+from timeouts and DNS failure.
 The remote wiki API's live availability has not been verified from the
 Android tablet yet.
 
