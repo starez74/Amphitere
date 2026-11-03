@@ -1,5 +1,6 @@
-# NetHack AI Edition - fixed tablet UI (build-only, safe test)
-# Uses the existing Windows environment. Does not install or delete saves.
+# NetHack AI Edition - fixed tablet UI
+# Build-only by default; -Install updates the existing app without clearing data.
+param([switch]$Install)
 $ErrorActionPreference = 'Stop'
 $Root = 'C:\Projects\NetHack-AI-Edition\Amphitere'
 $Android = Join-Path $Root 'sys\android\forkfront'
@@ -67,7 +68,7 @@ try {
     $env:JAVA_HOME = $Java
     $env:PATH = (Join-Path $Java 'bin') + ';C:\msys64\usr\bin;' + $env:PATH
 
-    Write-Host '=== BUILD APK (NO INSTALLATION) ===' -ForegroundColor Cyan
+    Write-Host '=== BUILD APK ===' -ForegroundColor Cyan
     Push-Location $Project
     try {
         & .\gradlew.bat :app:assembleDebug --console=plain
@@ -78,10 +79,32 @@ try {
     Check (Test-Path $Apk) "Build returned success but APK not found: $Apk"
     $Info = Get-Item $Apk
     Write-Host ''
-    Write-Host 'SUCCESS - APK BUILT, NOT INSTALLED' -ForegroundColor Green
+    Write-Host 'SUCCESS - APK BUILT' -ForegroundColor Green
     Write-Host "APK: $($Info.FullName)"
     Write-Host "Size: $([math]::Round($Info.Length / 1MB, 2)) MB"
-    Write-Host 'Your tablet app and saved characters have not been touched.'
+
+    if (-not $Install) {
+        Write-Host 'Build-only mode: tablet has not been touched.' -ForegroundColor Green
+        return
+    }
+
+    Write-Host '=== SAFE UPDATE INSTALL (-r, NO DATA WIPE) ===' -ForegroundColor Cyan
+    $Adb = 'C:\Users\Mick\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+    $Package = 'ca.b_ark.amphitere'
+    Check (Test-Path $Adb) "ADB not found: $Adb"
+    $Devices = @(& $Adb devices | Where-Object { $_ -match '^\S+\s+device(\s|$)' })
+    Check ($Devices.Count -eq 1) "Expected one authorised Android device. Found: $($Devices.Count)"
+    $Serial = ($Devices[0] -split '\s+')[0]
+    $Existing = & $Adb -s $Serial shell pm path $Package
+    Check ($Existing -match 'package:') 'Existing NetHack app not found; refusing first-time installation.'
+    Write-Host "Updating installed app on device: $Serial"
+    & $Adb -s $Serial install -r $Apk
+    Check ($LASTEXITCODE -eq 0) 'APK install failed. Existing app data was not intentionally cleared.'
+    Write-Host '=== LAUNCH UPDATED NETHACK ===' -ForegroundColor Cyan
+    & $Adb -s $Serial shell am start -n "$Package/com.tbd.forkfront.ForkFront"
+    Check ($LASTEXITCODE -eq 0) 'Installation succeeded but launch returned an error.'
+    Write-Host 'SUCCESS - UPDATED APP INSTALLED AND LAUNCHED' -ForegroundColor Green
+    Write-Host 'No adb uninstall, pm clear, or save-file deletion was performed.'
 } catch {
     Write-Host ''
     Write-Host "STOPPED SAFELY: $($_.Exception.Message)" -ForegroundColor Red
