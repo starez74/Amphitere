@@ -67,7 +67,8 @@ function filterHistory(raw) {
 function termsFromQuestion(question) {
   const ignored = new Set(['what','why','when','where','how','should','could',
     'would','please','about','with','does','do','the','are','can','for','you',
-    'into','and','now','have','that','this','my','your','me','its','from']);
+    'into','and','now','have','that','this','my','your','me','its','from',
+    'i','drink','eat','use','using','take']);
   const words = question.toLowerCase().match(/[a-z0-9'-]+/g) || [];
   const specific = words.filter(word => !ignored.has(word));
   return (specific.join(' ') || question).slice(0, 110);
