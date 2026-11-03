@@ -87,7 +87,7 @@ task buildNative(type: Exec) {
         "[ -f src/Makefile ] || sh sys/unix/setup.sh sys/unix/hints/android.500 && " +
         "rm -f src/monst.o src/objects.o src/date.o src/alloc.o src/dlb.o src/drawing.o src/hacklib.o src/hacklib.a && " +
         // Build host-side tools (makedefs, dlb, tilemap) with the host gcc
-        // — the cross-compiled binaries from android-all can't run here.
+        // â€” the cross-compiled binaries from android-all can't run here.
         // -DDLB is required for util/dlb's main() to be active.
         // -DTILES_IN_GLYPHMAP must match the engine build so tilemap emits
         // the populated glyphmap[] in src/tile.c.
@@ -145,8 +145,8 @@ task alignApk {
         def buildTools = android.sdkDirectory.toPath()
             .resolve("build-tools")
             .resolve(android.buildToolsVersion.toString())
-        def zipalign = buildTools.resolve("zipalign").toString()
-        def apksigner = buildTools.resolve("apksigner").toString()
+        def zipalign = buildTools.resolve("zipalign.exe").toString()
+        def apksigner = buildTools.resolve("apksigner.bat").toString()
 
         def debugApk = file("build/outputs/apk/debug/app-debug.apk")
         if (debugApk.exists()) {
@@ -171,8 +171,8 @@ task alignReleaseApk {
         def buildTools = android.sdkDirectory.toPath()
             .resolve("build-tools")
             .resolve(android.buildToolsVersion.toString())
-        def zipalign = buildTools.resolve("zipalign").toString()
-        def apksigner = buildTools.resolve("apksigner").toString()
+        def zipalign = buildTools.resolve("zipalign.exe").toString()
+        def apksigner = buildTools.resolve("apksigner.bat").toString()
 
         def releaseApk = file("build/outputs/apk/release/app-release.apk")
         if (releaseApk.exists()) {

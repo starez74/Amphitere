@@ -55,7 +55,7 @@ NETHACK_SO = libnethack.so
 # Shared library link flags.
 SO_LFLAGS = -shared -Wl,-soname,libnethack.so
 WINLIB =
-LIBS = -lm -llog
+LIBS = -lm -llog -lz
 
 # After the normal 'pregame' step (which generates .h files and compiles
 # the core), build the shared library.

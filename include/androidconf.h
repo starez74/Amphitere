@@ -73,7 +73,7 @@ void and_error(const char *, ...) __attribute__((format(printf, 1, 2), noreturn)
 #ifdef COMPRESS
 #undef COMPRESS
 #endif
-#define COMPRESS "/system/bin/gzip"
+#define ZLIB_COMP
 #ifdef COMPRESS_EXTENSION
 #undef COMPRESS_EXTENSION
 #endif

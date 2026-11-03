@@ -1597,8 +1597,15 @@ get_saved_games(void)
             j = 0;
         }
         for (i = 0; i < n1; i++) {
-            if (strchr(namelist[i]->d_name, '.'))
+            /* Include compressed saves but ignore metadata sidecars. */
+            const char *ext = strrchr(namelist[i]->d_name, '.');
+#ifdef COMPRESS_EXTENSION
+            if (ext && strcmp(ext, COMPRESS_EXTENSION) != 0)
                 continue;
+#else
+            if (ext)
+                continue;
+#endif
             if (sscanf(namelist[i]->d_name, "%d%63s", &uid, name) == 2) {
                 if (uid == myuid) {
                     char filename[BUFSZ];

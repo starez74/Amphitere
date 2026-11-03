@@ -348,7 +348,9 @@ submit_web_report(int cos, const char *msg, const char *why)
 
     int count = 0;
     if (cos == 1) {
-# ifdef WIN32
+# if defined(ANDROID)
+    count = 0;
+# elif defined(WIN32)
         count = win32_cr_gettrace(SWR_FRAMES, uend, MAX_URL - (uend - url));
         uend = eos(url);
 # else

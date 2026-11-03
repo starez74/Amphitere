@@ -38,7 +38,8 @@ OPTIONS=!autopickup
 
 OPTIONS=lit_corridor,showexp,time,toptenwin
 OPTIONS=pile_limit:2,hilite_pile,hilite_pet
-OPTIONS=IBMgraphics,runmode:walk
+OPTIONS=symset:IBMGraphics_2,runmode:walk
+OPTIONS=number_pad:1
 OPTIONS=boulder:0
 #OPTIONS=!force_invmenu
 
@@ -146,3 +147,5 @@ OPTIONS=hilite_status:carrying-capacity/overloaded/red&inverse
 
 
 
+
+OPTIONS=!tutorial
