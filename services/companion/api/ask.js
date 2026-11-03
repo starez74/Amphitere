@@ -129,6 +129,30 @@ async function retrieveWiki(question) {
   } catch (_) {
     // Missing MediaWiki TextExtracts is not an excuse to invent an answer.
   }
+  // A Wiki introduction often says only "this is a potion" and omits
+  // mechanics. Retrieve a longer section-aware extract for the best match.
+  // MediaWiki permits multi-page extracts only with exintro, so do this
+  // as a separate single-page request.
+  try {
+    const details = new URL(WIKI_API);
+    details.search = new URLSearchParams({
+      action: 'query', prop: 'extracts', explaintext: '1',
+      exsectionformat: 'plain', exchars: '1200', exlimit: '1',
+      format: 'json', formatversion: '2',
+      pageids: String(selected[0].pageid)
+    }).toString();
+    const detail = await jsonFrom(details.toString(), { headers: {
+      'User-Agent': 'NetHackAICompanion/0.2 (source-backed help)',
+      'Accept': 'application/json'
+    }});
+    const firstPage = detail?.query?.pages?.[0];
+    const longer = plainText(firstPage?.extract, 1200);
+    if (longer.length > (summary.get(selected[0].pageid) || '').length + 40)
+      summary.set(selected[0].pageid, longer);
+  } catch (_) {
+    // Intro citations remain available even when full extraction fails.
+  }
+
   return selected.map(hit => ({
     title: cleanText(hit.title, 130),
     url: wikiUrl(hit.title),
