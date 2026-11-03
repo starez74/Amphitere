@@ -49,3 +49,63 @@ test('rejects unauthorized requests without accessing upstream services', async 
     else process.env.COMPANION_CLIENT_TOKEN = origToken;
   }
 });
+
+test('grounded response passes only whitelisted status and wiki sources', async () => {
+  const handler = require('./api/ask.js');
+  const previousKey = process.env.OPENAI_API_KEY;
+  const previousToken = process.env.COMPANION_CLIENT_TOKEN;
+  const originalFetch = global.fetch;
+  process.env.OPENAI_API_KEY = 'mock_provider_key';
+  process.env.COMPANION_CLIENT_TOKEN = 't'.repeat(48);
+  let modelBody = '';
+  let code;
+  let reply;
+  global.fetch = async (url, options) => {
+    const target = String(url);
+    let response;
+    if (target.startsWith('https://nethackwiki.com/api.php') &&
+        target.includes('list=search')) {
+      response = { query: { search: [{ pageid: 42, title: 'Potion of healing' }] } };
+    } else if (target.startsWith('https://nethackwiki.com/api.php')) {
+      response = { query: { pages: [{
+        pageid: 42, extract: 'A potion of healing restores hit points.'
+      }] } };
+    } else if (target === 'https://api.openai.com/v1/responses') {
+      modelBody = options.body;
+      response = { output: [{
+        type: 'message', content: [{ type: 'output_text',
+          text: 'Consider healing if your HP is low [1].' }]
+      }] };
+    } else {
+      throw new Error('Unexpected network destination');
+    }
+    return { ok: true, text: async () => JSON.stringify(response) };
+  };
+  const res = { setHeader() {}, status(v) { code = v; return this; },
+    json(v) { reply = v; return this; } };
+  try {
+    await handler({
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + process.env.COMPANION_CLIENT_TOKEN },
+      body: { question: 'Should I drink my potion of healing now?',
+        role: 'Monk', mode: 'in_world',
+        state: { hp: 14, hpMax: 20, name: 'Guy', inventory: ['sword'] },
+        history: [] }
+    }, res);
+    assert.equal(code, 200);
+    assert.equal(reply.grounded, true);
+    assert.equal(reply.sources[0].title, 'Potion of healing');
+    const body = JSON.parse(modelBody);
+    assert.equal(body.store, false);
+    assert.equal(body.model, process.env.OPENAI_MODEL || 'gpt-5.4-mini');
+    assert.equal(JSON.stringify(body).includes('Guy'), false);
+    assert.equal(JSON.stringify(body).includes('sword'), false);
+    assert.equal(JSON.stringify(body).includes('"hp":14'), true);
+  } finally {
+    global.fetch = originalFetch;
+    if (previousKey === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = previousKey;
+    if (previousToken === undefined) delete process.env.COMPANION_CLIENT_TOKEN;
+    else process.env.COMPANION_CLIENT_TOKEN = previousToken;
+  }
+});
