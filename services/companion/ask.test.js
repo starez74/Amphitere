@@ -1,7 +1,6 @@
-'use strict';
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const { _test } = require('./api/ask.js');
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import handler, { _test } from './api/ask.js';
 test('token equality and rejects malformed input', () => {
   const secret = 'x'.repeat(50);
   assert.equal(_test.tokenValid('Bearer ' + secret, secret), true);
@@ -28,7 +27,6 @@ test('wiki search query and model outputs', () => {
 });
 
 test('rejects unauthorized requests without accessing upstream services', async () => {
-  const handler = require('./api/ask.js');
   const origApi = process.env.OPENAI_API_KEY;
   const origToken = process.env.COMPANION_CLIENT_TOKEN;
   process.env.OPENAI_API_KEY = 'test_only_key';
@@ -51,7 +49,6 @@ test('rejects unauthorized requests without accessing upstream services', async 
 });
 
 test('grounded response passes only whitelisted status and wiki sources', async () => {
-  const handler = require('./api/ask.js');
   const previousKey = process.env.OPENAI_API_KEY;
   const previousToken = process.env.COMPANION_CLIENT_TOKEN;
   const originalFetch = global.fetch;

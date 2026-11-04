@@ -1,10 +1,8 @@
-'use strict';
-
 /**
  * NetHack AI Edition companion endpoint, deployed as a Vercel Node function.
  * All provider credentials stay on the server. No game saves or identity fields.
  */
-const crypto = require('node:crypto');
+import crypto from 'node:crypto';
 
 const WIKI_API = 'https://nethackwiki.com/api.php';
 const MODEL_API = 'https://api.openai.com/v1/responses';
@@ -271,6 +269,6 @@ async function handle(req, res) {
   }
 }
 
-module.exports = handle;
-module.exports._test = { tokenValid, cleanRole, filterState, filterHistory,
+export default handle;
+export const _test = { tokenValid, cleanRole, filterState, filterHistory,
   termsFromQuestion, plainText, extractAnswer, retrieveWiki, rateLimited };

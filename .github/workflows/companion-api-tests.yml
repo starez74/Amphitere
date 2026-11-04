@@ -1,0 +1,38 @@
+name: Companion API tests
+
+on:
+  push:
+    branches:
+      - feature/conversational-companion
+    paths:
+      - 'services/companion/**'
+      - '.github/workflows/companion-api-tests.yml'
+  pull_request:
+    paths:
+      - 'services/companion/**'
+      - '.github/workflows/companion-api-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node.js isolated API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: services/companion
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: ''
+      - name: Check JavaScript syntax
+        run: |
+          node --check api/ask.js
+          node --check ask.test.js
+      - name: Run mocked provider and privacy tests
+        run: npm test
