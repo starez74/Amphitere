@@ -12,9 +12,10 @@ on the player's own Android device (CPU). Every public-release user should
 be able to run the same local feature without access to the developer's
 Vercel account. Offline inference does not contact the internet.
 
-The already-deployed Vercel prototype is not part of this version and is
-not called by the offline screen. In this experimental branch, the earlier
-cloud support classes are unused; production cleanup will remove them.
+The earlier Vercel prototype is separate and has been paused. This
+branch contains no paid AI backend source, API pairing client or cloud
+credentials. The original conversational/cloud branch remains preserved
+as an independent experiment.
 
 ## What's implemented
 
