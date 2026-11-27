@@ -86,6 +86,14 @@ try {
         Pop-Location
     }
     Check (Test-Path $Apk) "Build returned success but APK not found: $Apk"
+    Write-Host '=== VERIFY BOTH NATIVE LIBRARIES IN APK ===' -ForegroundColor Cyan
+    $Jar = Join-Path $Java 'bin\jar.exe'
+    Check (Test-Path $Jar) "JDK jar tool unavailable: $Jar"
+    $ApkEntries = @(& $Jar tf $Apk)
+    Check ($LASTEXITCODE -eq 0) 'Could not inspect APK native libraries'
+    Check ($ApkEntries -contains 'lib/arm64-v8a/libnethack.so') 'NetHack game library absent; refusing install'
+    Check ($ApkEntries -contains 'lib/arm64-v8a/libnethack_llama.so') 'Offline AI library absent; refusing install'
+    Write-Host 'NetHack game and local llama.cpp JNI present in APK' -ForegroundColor Green
     $Info = Get-Item $Apk
     Write-Host ''
     Write-Host 'SUCCESS - APK BUILT' -ForegroundColor Green
