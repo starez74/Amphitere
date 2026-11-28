@@ -19,32 +19,32 @@ from pathlib import Path
 MAX_TEXT = 16000
 TITLE_EXCLUDE = ("Source:", "File:", "Image:", "Template:", "Category:", "NetHackWiki:",
                  "User:", "Talk:", "MediaWiki:", "Help:")
-LINK = re.compile(r"\\[\\[(?:[^]\\n]*?\\|)?([^]\\n]+?)\\]\\]")
-EXTERNAL = re.compile(r"\\[(?:https?://)[^\\s\\]]+\\s+([^\\]]+)\\]")
-TEMPLATE = re.compile(r"\\{\\{[^{}]*\\}\\}", re.S)
+LINK = re.compile(r"\[\[(?:[^]\n]*?\|)?([^]\n]+?)\]\]")
+EXTERNAL = re.compile(r"\[(?:https?://)[^\s\]]+\s+([^\]]+)\]")
+TEMPLATE = re.compile(r"\{\{[^{}]*\}\}", re.S)
 TAG = re.compile(r"<[^>]*>", re.S)
-SPACE = re.compile(r"\\s+")
+SPACE = re.compile(r"\s+")
 
 
 def plain(wikitext):
     # Remove large sections that do not read sensibly as plain paragraphs.
-    s = re.sub(r"<(ref|gallery|syntaxhighlight|source|pre|nowiki)\\b[^>]*>.*?</\\1>",
+    s = re.sub(r"<(ref|gallery|syntaxhighlight|source|pre|nowiki)\b[^>]*>.*?</\1>",
                " ", wikitext, flags=re.I | re.S)
     s = re.sub(r"<!--.*?-->", " ", s, flags=re.S)
-    s = re.sub(r"\\{\\|.*?\\|\\}", " ", s, flags=re.S)
+    s = re.sub(r"\{\|.*?\|\}", " ", s, flags=re.S)
     # Repeatedly discard nested template constructs; preserve surrounding prose.
     for _ in range(12):
         result = TEMPLATE.sub(" ", s)
         if result == s:
             break
         s = result
-    s = re.sub(r"^\\s*\\|.*$", " ", s, flags=re.M)
+    s = re.sub(r"^\s*\|.*$", " ", s, flags=re.M)
     s = LINK.sub(lambda m: m.group(1), s)
     s = EXTERNAL.sub(lambda m: m.group(1), s)
-    s = re.sub(r"\\[https?://[^]\\n]*\\]", " ", s)
+    s = re.sub(r"\[https?://[^]\n]*\]", " ", s)
     s = TAG.sub(" ", s)
     s = re.sub(r"'{2,5}", "", s)
-    s = re.sub(r"={2,}\\s*(.*?)\\s*={2,}", r". \\1. ", s)
+    s = re.sub(r"={2,}\s*(.*?)\s*={2,}", r". \1. ", s)
     return SPACE.sub(" ", html.unescape(s)).strip()[:MAX_TEXT]
 
 
