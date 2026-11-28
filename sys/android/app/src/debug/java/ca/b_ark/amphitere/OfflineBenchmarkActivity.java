@@ -74,6 +74,8 @@ public final class OfflineBenchmarkActivity extends Activity {
         sample.put("question", question);
         sample.put("elapsed_ms", Math.round(elapsedNs / 1000000.0));
         sample.put("generated", reply != null && reply.generated);
+        sample.put("answer_type", reply == null ? "error"
+            : (reply.generated ? "model" : "reference"));
         sample.put("answer", reply == null ? "" : reply.answer);
         sample.put("error", error == null ? JSONObject.NULL : error);
         samples.put(sample);
