@@ -35,8 +35,8 @@ try {
     Check ($devices.Count -eq 1) 'Connect and authorize exactly one tablet.'
     $Serial = ($devices[0] -split '\s+')[0]
     $existing = @(& $Adb -s $Serial shell pm path $Package)
-    Check ($existing -match 'package:') 'Existing NetHack debug app not installed.'
-    Device @('shell','run-as',$Package,'test','-d','files')
+    Check ((($existing -join "`n") -match 'package:')) 'Existing NetHack debug app not installed.'
+    Device -argsList @('shell','run-as',$Package,'test','-d','files')
     New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 
     if ((Test-Path $LocalModel) -and (Get-Item $LocalModel).Length -ge $MinSize -and
@@ -63,21 +63,23 @@ try {
     Check ($localHash -eq $ExpectedSha256) 'Downloaded model checksum does not match the published SHA256; refusing installation.'
     Write-Host ("Qwen3 file: {0:N1} MiB, SHA256 {1}" -f ($localSize/1MB), $localHash)
     Write-Host '=== UPLOAD MODEL TO TABLET ===' -ForegroundColor Cyan
-    Device @('shell','am','force-stop',$Package)
-    Device @('push',$LocalModel,$Remote)
+    Device -argsList @('shell','am','force-stop',$Package)
+    Device -argsList @('push',$LocalModel,$Remote)
     $Pushed = $true
-    Device @('shell','run-as',$Package,'mkdir','-p','files/offline-ai')
-    Device @('shell','run-as',$Package,'chmod','700','files/offline-ai')
-    Device @('shell','run-as',$Package,'cp',$Remote,$TempTarget)
-    Device @('shell','run-as',$Package,'chmod','600',$TempTarget)
+    Device -argsList @('shell','run-as',$Package,'mkdir','-p','files/offline-ai')
+    Device -argsList @('shell','run-as',$Package,'chmod','700','files/offline-ai')
+    Device -argsList @('shell','run-as',$Package,'cp',$Remote,$TempTarget)
+    Device -argsList @('shell','run-as',$Package,'chmod','600',$TempTarget)
     $tabletHash = (& $Adb -s $Serial shell run-as $Package sha256sum $TempTarget)
     Check ($LASTEXITCODE -eq 0) 'Could not calculate tablet model SHA256'
-    Check ($tabletHash -match '^([0-9a-fA-F]{64})\s') 'Unexpected tablet SHA256 response'
-    Check ($Matches[1].ToLowerInvariant() -eq $localHash) 'SHA256 mismatch! Existing model has not been replaced.'
+    $tabletHashText = ($tabletHash -join "`n")
+    $tabletHashMatch = [regex]::Match($tabletHashText.Trim(), '^([0-9a-fA-F]{64})\s')
+    Check $tabletHashMatch.Success 'Unexpected tablet SHA256 response'
+    Check ($tabletHashMatch.Groups[1].Value.ToLowerInvariant() -eq $localHash) 'SHA256 mismatch! Existing model has not been replaced.'
     Write-Host 'Verified identical SHA256 hashes on PC and tablet.' -ForegroundColor Green
     # Atomic rename replaces only the model filename, not wiki or game saves.
-    Device @('shell','run-as',$Package,'mv','-f',$TempTarget,$Target)
-    Device @('shell','run-as',$Package,'test','-f',$Target)
+    Device -argsList @('shell','run-as',$Package,'mv','-f',$TempTarget,$Target)
+    Device -argsList @('shell','run-as',$Package,'test','-f',$Target)
     $Finished = $true
     Write-Host 'Qwen3 model successfully installed in private app storage.' -ForegroundColor Green
 } catch {
