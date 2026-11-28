@@ -28,6 +28,9 @@ public final class OfflineBenchmarkActivity extends Activity {
       "What are the risks of drinking an unidentified potion?",
       "Why is a cockatrice corpse dangerous to handle?",
       "How can a player avoid being burdened by too much equipment?",
+      "What are the risks of drinking an unidentified potion?",
+      "Why is a cockatrice corpse dangerous to handle?",
+      "How can a player avoid being burdened by too much equipment?",
       "What are the risks of drinking an unidentified potion?"
   };
   private static final int REPEATS = 3;
@@ -70,7 +73,8 @@ public final class OfflineBenchmarkActivity extends Activity {
         + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS + "\n\n" + question
         + "\n\nKeep the tablet awake; do not switch apps.");
     final long startNs = SystemClock.elapsedRealtimeNanos();
-    final boolean rawModel = questionIndex >= 3;
+    final boolean rawModel = questionIndex >= 3 && questionIndex < 6;
+    final boolean screenedModel = questionIndex >= 6;
     final OfflineInference.Callback received = (reply, error) -> {
       if (finished) return;
       long elapsedNs = SystemClock.elapsedRealtimeNanos() - startNs;
@@ -80,7 +84,7 @@ public final class OfflineBenchmarkActivity extends Activity {
         sample.put("repeat", repeat);
         sample.put("question", question);
         sample.put("elapsed_ms", Math.round(elapsedNs / 1000000.0));
-        sample.put("benchmark_path", rawModel ? "raw_model" : "guarded_reference");
+        sample.put("benchmark_path", rawModel ? "raw_model" : (screenedModel ? "screened_model" : "guarded_reference"));
         sample.put("generated", reply != null && reply.generated);
         sample.put("answer_type", reply == null ? "error"
             : (reply.generated ? "model" : "reference"));
@@ -110,6 +114,8 @@ public final class OfflineBenchmarkActivity extends Activity {
     };
     if (rawModel) {
       inference.askRawModelForBenchmark(this, question, "Adventurer", true, null, received);
+    } else if (screenedModel) {
+      inference.askScreenedModelForBenchmark(this, question, "Adventurer", true, null, received);
     } else {
       inference.ask(this, question, "Adventurer", true, null, received);
     }
