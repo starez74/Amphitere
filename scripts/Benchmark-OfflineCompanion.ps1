@@ -94,7 +94,7 @@ try {
     # This deletes only a prior benchmark report, never the model or saves.
     & $ADB -s $serial shell run-as $Pkg rm -f files/offline-benchmark.json
     Verify ($LASTEXITCODE -eq 0) 'Could not clear previous benchmark report'
-    Write-Host '=== RUN 18 AUTOMATIC QUESTIONS ON TABLET ===' -ForegroundColor Cyan
+    Write-Host '=== RUN 27 AUTOMATIC QUESTIONS ON TABLET ===' -ForegroundColor Cyan
     # ADB may reuse the previous top-most benchmark Activity instead of calling onCreate.
     # The game must have been Save & Quit before running this script.
     & $ADB -s $serial shell am force-stop $Pkg
@@ -111,14 +111,14 @@ try {
             try { $report = $raw | ConvertFrom-Json } catch { continue }
             if ($report.samples.Count -ne $lastSamples) {
                 $lastSamples = $report.samples.Count
-                Write-Host ("Completed {0}/18 answers..." -f $lastSamples)
+                Write-Host ("Completed {0}/27 answers..." -f $lastSamples)
             }
             if ($report.status -eq 'complete' -or $report.status -eq 'error') { break }
         }
     } while ((Get-Date) -lt $deadline)
     Verify ($null -ne $report) 'No report received; inspect the tablet screen or adb logcat'
     Verify ($report.status -eq 'complete') ("Benchmark stopped: " + $report.error)
-    Verify ($report.samples.Count -eq 18) 'Incomplete report: expected eighteen samples'
+    Verify ($report.samples.Count -eq 27) 'Incomplete report: expected twenty-seven samples'
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $jsonPath = Join-Path $OutDir "benchmark-$stamp.json"
     $csvPath = Join-Path $OutDir "benchmark-$stamp.csv"
