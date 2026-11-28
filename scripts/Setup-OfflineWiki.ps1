@@ -1,6 +1,6 @@
 # One-command developer preview: update/build APK, install offline wiki index,
 # run same repeatable on-device benchmark and save full answers for review.
-param([switch]$Install)
+param([switch]$Install, [switch]$WikiOnly)
 $ErrorActionPreference = 'Stop'
 $Root = 'C:\Projects\NetHack-AI-Edition\Amphitere'
 $Pkg = 'ca.b_ark.amphitere'
@@ -9,6 +9,7 @@ $Out = 'C:\Projects\NetHack-AI-Edition\offline-companion-test'
 try {
     if (-not $Install) { throw 'Run with -Install to approve debug APK update and wiki download.' }
     if (-not (Test-Path $ADB)) { throw 'ADB not found' }
+    if (-not $WikiOnly) {
     Write-Host 'PHASE 1/3: update and build debug APK, capture original small-note baseline' -ForegroundColor Cyan
     $benchmark = Join-Path $Root 'scripts\Benchmark-OfflineCompanion.ps1'
     if (-not (Test-Path $benchmark)) {
@@ -16,6 +17,9 @@ try {
     }
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $benchmark -Install
     if ($LASTEXITCODE -ne 0) { throw 'Debug APK build / baseline failed; not installing wiki index' }
+    } else {
+        Write-Host 'Skipping successful baseline and APK rebuild; using existing installed debug APK.' -ForegroundColor Cyan
+    }
     Write-Host 'PHASE 2/3: download/index Wiki and install to tablet private storage' -ForegroundColor Cyan
     $installWiki = Join-Path $Root 'scripts\Install-OfflineWiki.ps1'
     if (-not (Test-Path $installWiki)) { throw "Missing installer: $installWiki" }
