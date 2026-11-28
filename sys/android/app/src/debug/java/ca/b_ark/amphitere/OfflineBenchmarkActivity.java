@@ -20,19 +20,22 @@ import org.json.JSONObject;
  * questions over the network. Timings use Android's monotonic elapsed clock.
  */
 public final class OfflineBenchmarkActivity extends Activity {
-  // First three use the production factual guardrail; the same three are
-  // repeated in raw-model mode to test factual generation, not just shortcuts.
-  private static final String[] QUESTIONS = {
+  // Six distinct question families, each run in curated/default, raw model,
+  // and screened model mode. Prevents the same three prompts overfitting tests.
+  private static final String[] TOPICS = {
       "Why is a cockatrice corpse dangerous to handle?",
       "How can a player avoid being burdened by too much equipment?",
       "What are the risks of drinking an unidentified potion?",
-      "Why is a cockatrice corpse dangerous to handle?",
-      "How can a player avoid being burdened by too much equipment?",
-      "What are the risks of drinking an unidentified potion?",
-      "Why is a cockatrice corpse dangerous to handle?",
-      "How can a player avoid being burdened by too much equipment?",
-      "What are the risks of drinking an unidentified potion?"
+      "Why is it dangerous to attack a floating eye in melee?",
+      "What should a monk know before wearing body armor?",
+      "How should I manage food and hunger during exploration?"
   };
+  private static final String[] QUESTIONS = new String[TOPICS.length * 3];
+  static {
+    for (int mode = 0; mode < 3; mode++) {
+      System.arraycopy(TOPICS, 0, QUESTIONS, mode * TOPICS.length, TOPICS.length);
+    }
+  }
   private static final int REPEATS = 3;
   private final OfflineInference inference = new OfflineInference();
   private final JSONArray samples = new JSONArray();
@@ -73,8 +76,8 @@ public final class OfflineBenchmarkActivity extends Activity {
         + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS + "\n\n" + question
         + "\n\nKeep the tablet awake; do not switch apps.");
     final long startNs = SystemClock.elapsedRealtimeNanos();
-    final boolean rawModel = questionIndex >= 3 && questionIndex < 6;
-    final boolean screenedModel = questionIndex >= 6;
+    final boolean rawModel = questionIndex >= TOPICS.length && questionIndex < TOPICS.length * 2;
+    final boolean screenedModel = questionIndex >= TOPICS.length * 2;
     final OfflineInference.Callback received = (reply, error) -> {
       if (finished) return;
       long elapsedNs = SystemClock.elapsedRealtimeNanos() - startNs;
