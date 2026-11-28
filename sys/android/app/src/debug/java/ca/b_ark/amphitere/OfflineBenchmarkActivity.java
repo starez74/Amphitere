@@ -22,7 +22,10 @@ public final class OfflineBenchmarkActivity extends Activity {
   private static final String[] QUESTIONS = {
       "What should I do if I'm low on health and have no healing potions?",
       "How does Elbereth protect me?",
-      "What food should I carry to avoid starvation?"
+      "What food should I carry to avoid starvation?",
+      "How can I identify an unknown wand without using its charges?",
+      "Why is fighting a floating eye in melee dangerous?",
+      "What should I do before trying on unidentified armour?"
   };
   private static final int REPEATS = 3;
   private final OfflineInference inference = new OfflineInference();
@@ -61,7 +64,7 @@ public final class OfflineBenchmarkActivity extends Activity {
     final int repeat = sampleIndex % REPEATS + 1;
     final String question = QUESTIONS[questionIndex];
     label.setText("Offline AI benchmark\nQuestion " + (questionIndex + 1)
-        + "/3, repeat " + repeat + "/3\n\n" + question
+        + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS\n\n" + question
         + "\n\nKeep the tablet awake; do not switch apps.");
     final long startNs = SystemClock.elapsedRealtimeNanos();
     inference.ask(this, question, "Adventurer", true, null, (reply, error) -> {
