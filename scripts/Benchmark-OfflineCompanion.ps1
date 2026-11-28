@@ -138,14 +138,19 @@ try {
             MaximumSeconds=[math]::Round(($vals | Measure-Object -Maximum).Maximum / 1000,2)
         }
     } | Format-Table -AutoSize
-    $danger = @($rows | Where-Object { $_.Answer -match "(?i)elbereth.?s shield|less visible|hacker.?s food|healer.?s shop" })
+    # Heuristic warnings apply ONLY to model-generated text. Curated safeguards
+    # may mention incorrect mechanics in a negated sentence ("Do not assume...").
+    # Reference answers are reviewed separately, never auto-labelled as errors.
+    $danger = @($rows | Where-Object {
+        $_.Generated -eq $true -and $_.Answer -match "(?i)elbereth.?s shield|less visible|hacker.?s food|healer.?s shop"
+    })
     $reference = @($rows | Where-Object { -not $_.Generated })
     Write-Host ("Response types: {0} model-generated, {1} reference-only" -f ($rows.Count - $reference.Count), $reference.Count)
     if ($danger.Count -gt 0) {
-        Write-Warning "Accuracy regression: one or more answers contain previously observed unsupported claims."
+        Write-Warning "Possible unsupported phrase in AI-generated answer; inspect context before judging accuracy."
         $danger | Select-Object Question,Repeat,Answer | Format-Table -Wrap
     } else {
-        Write-Host 'Known unsupported-claim phrases: not found in returned text.' -ForegroundColor Green
+        Write-Host 'Known unsupported-claim phrases: not found in model-generated answers.' -ForegroundColor Green
     }
     Write-Host 'NOTE: Phrase checks cannot establish factual correctness; review answers and versions.'
     Write-Host "CSV: $csvPath"
