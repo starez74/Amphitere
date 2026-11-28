@@ -16,6 +16,7 @@ $TempTarget = 'files/offline-ai/qwen3-import.tmp'
 $Remote = '/data/local/tmp/nethack-qwen3-06b.gguf'
 $MinSize = 400000000L
 $MaxSize = 650000000L
+$ExpectedSha256 = '9acfc1e001311f34b4252001b626f2e466d592a42065f66571bff3790d4e1b14'
 $Serial = $null
 $Pushed = $false
 $Finished = $false
@@ -59,6 +60,7 @@ try {
     $localSize = (Get-Item $LocalModel).Length
     Check ($localSize -ge $MinSize -and $localSize -le $MaxSize) 'GGUF size outside expected range'
     $localHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $LocalModel).Hash.ToLowerInvariant()
+    Check ($localHash -eq $ExpectedSha256) 'Downloaded model checksum does not match the published SHA256; refusing installation.'
     Write-Host ("Qwen3 file: {0:N1} MiB, SHA256 {1}" -f ($localSize/1MB), $localHash)
     Write-Host '=== UPLOAD MODEL TO TABLET ===' -ForegroundColor Cyan
     Device @('shell','am','force-stop',$Package)
