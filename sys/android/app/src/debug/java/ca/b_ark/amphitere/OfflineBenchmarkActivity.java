@@ -7,6 +7,7 @@ import android.view.Gravity;
 import android.view.WindowManager;
 import android.widget.TextView;
 import com.tbd.forkfront.companion.OfflineInference;
+import com.tbd.forkfront.companion.OfflineKnowledge;
 import com.tbd.forkfront.companion.OfflineModelStore;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -84,6 +85,19 @@ public final class OfflineBenchmarkActivity extends Activity {
         sample.put("answer_type", reply == null ? "error"
             : (reply.generated ? "model" : "reference"));
         sample.put("answer", reply == null ? "" : reply.answer);
+        // Preserve the exact evidence actually supplied to inference so we
+        // can diagnose wrong-page retrieval versus model hallucinations.
+        JSONArray evidence = new JSONArray();
+        if (reply != null) {
+          for (OfflineKnowledge.Note source : reply.sources) {
+            JSONObject entry = new JSONObject();
+            entry.put("title", source.topic);
+            entry.put("url", source.url);
+            entry.put("excerpt", source.facts);
+            evidence.put(entry);
+          }
+        }
+        sample.put("sources", evidence);
         sample.put("error", error == null ? JSONObject.NULL : error);
         samples.put(sample);
       } catch (Exception e) {
