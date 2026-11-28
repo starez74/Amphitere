@@ -1,5 +1,5 @@
 # NetHack AI Edition: one-command debug APK build/install and fully automatic
-# on-device, 3-question x 3-repeat offline inference benchmark. PowerShell 5.1.
+# on-device, 6-question x 3-mode x 3-repeat offline inference benchmark. PowerShell 5.1.
 # Does not uninstall, clear app data, change saves, or run game commands.
 param([switch]$Install)
 $ErrorActionPreference = 'Stop'
@@ -94,7 +94,7 @@ try {
     # This deletes only a prior benchmark report, never the model or saves.
     & $ADB -s $serial shell run-as $Pkg rm -f files/offline-benchmark.json
     Verify ($LASTEXITCODE -eq 0) 'Could not clear previous benchmark report'
-    Write-Host '=== RUN 27 AUTOMATIC QUESTIONS ON TABLET ===' -ForegroundColor Cyan
+    Write-Host '=== RUN 54 AUTOMATIC QUESTIONS ON TABLET ===' -ForegroundColor Cyan
     # ADB may reuse the previous top-most benchmark Activity instead of calling onCreate.
     # The game must have been Save & Quit before running this script.
     & $ADB -s $serial shell am force-stop $Pkg
@@ -111,14 +111,14 @@ try {
             try { $report = $raw | ConvertFrom-Json } catch { continue }
             if ($report.samples.Count -ne $lastSamples) {
                 $lastSamples = $report.samples.Count
-                Write-Host ("Completed {0}/27 answers..." -f $lastSamples)
+                Write-Host ("Completed {0}/54 answers..." -f $lastSamples)
             }
             if ($report.status -eq 'complete' -or $report.status -eq 'error') { break }
         }
     } while ((Get-Date) -lt $deadline)
     Verify ($null -ne $report) 'No report received; inspect the tablet screen or adb logcat'
     Verify ($report.status -eq 'complete') ("Benchmark stopped: " + $report.error)
-    Verify ($report.samples.Count -eq 27) 'Incomplete report: expected twenty-seven samples'
+    Verify ($report.samples.Count -eq 54) 'Incomplete report: expected fifty-four samples'
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $jsonPath = Join-Path $OutDir "benchmark-$stamp.json"
     $csvPath = Join-Path $OutDir "benchmark-$stamp.csv"
@@ -149,9 +149,9 @@ try {
     $rawRows = @($rows | Where-Object { $_.BenchmarkPath -eq 'raw_model' })
     $guardRows = @($rows | Where-Object { $_.BenchmarkPath -eq 'guarded_reference' })
     $screenedRows = @($rows | Where-Object { $_.BenchmarkPath -eq 'screened_model' })
-    Verify ($rawRows.Count -eq 9 -and $guardRows.Count -eq 9 -and $screenedRows.Count -eq 9) 'Expected 9 curated, 9 raw, and 9 screened-model runs'
-    Verify (@($rawRows | Where-Object { $_.Generated -eq $true }).Count -eq 9) 'Raw-model benchmark produced no generated responses'
-    Write-Host ("VALIDATED: 9 curated, 9 raw model, and 9 screened model tests ({0} screened outputs withheld)." -f @($screenedRows | Where-Object { $_.Generated -eq $false }).Count) -ForegroundColor Green
+    Verify ($rawRows.Count -eq 18 -and $guardRows.Count -eq 18 -and $screenedRows.Count -eq 18) 'Expected 18 curated, 18 raw, and 18 screened-model runs'
+    Verify (@($rawRows | Where-Object { $_.Generated -eq $true }).Count -eq 18) 'Raw-model benchmark produced no generated responses'
+    Write-Host ("VALIDATED: 18 curated, 18 raw model, and 18 screened model tests ({0} screened outputs withheld)." -f @($screenedRows | Where-Object { $_.Generated -eq $false }).Count) -ForegroundColor Green
     if ($danger.Count -gt 0) {
         Write-Warning "Possible unsupported phrase in AI-generated answer; inspect context before judging accuracy."
         $danger | Select-Object Question,Repeat,Answer | Format-Table -Wrap
