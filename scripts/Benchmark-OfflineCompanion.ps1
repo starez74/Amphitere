@@ -95,6 +95,10 @@ try {
     & $ADB -s $serial shell run-as $Pkg rm -f files/offline-benchmark.json
     Verify ($LASTEXITCODE -eq 0) 'Could not clear previous benchmark report'
     Write-Host '=== RUN 9 AUTOMATIC QUESTIONS ON TABLET ===' -ForegroundColor Cyan
+    # ADB may reuse the previous top-most benchmark Activity instead of calling onCreate.
+    # The game must have been Save & Quit before running this script.
+    & $ADB -s $serial shell am force-stop $Pkg
+    Verify ($LASTEXITCODE -eq 0) 'Could not stop previous debug benchmark process'
     & $ADB -s $serial shell am start -n $Activity
     Verify ($LASTEXITCODE -eq 0) 'Could not start debug benchmark activity'
     $deadline = (Get-Date).AddMinutes(20)
