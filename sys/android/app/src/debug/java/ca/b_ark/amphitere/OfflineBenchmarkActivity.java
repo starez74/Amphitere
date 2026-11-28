@@ -25,7 +25,10 @@ public final class OfflineBenchmarkActivity extends Activity {
       "What food should I carry to avoid starvation?",
       "How can I identify an unknown wand without using its charges?",
       "Why is fighting a floating eye in melee dangerous?",
-      "What should I do before trying on unidentified armour?"
+      "What should I do before trying on unidentified armour?",
+      "Why is a cockatrice corpse dangerous to handle?",
+      "How can a player avoid being burdened by too much equipment?",
+      "What are the risks of drinking an unidentified potion?"
   };
   private static final int REPEATS = 3;
   private final OfflineInference inference = new OfflineInference();
