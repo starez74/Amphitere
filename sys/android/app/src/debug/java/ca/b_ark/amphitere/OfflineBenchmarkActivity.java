@@ -19,13 +19,12 @@ import org.json.JSONObject;
  * questions over the network. Timings use Android's monotonic elapsed clock.
  */
 public final class OfflineBenchmarkActivity extends Activity {
+  // First three use the production factual guardrail; the same three are
+  // repeated in raw-model mode to test factual generation, not just shortcuts.
   private static final String[] QUESTIONS = {
-      "What should I do if I'm low on health and have no healing potions?",
-      "How does Elbereth protect me?",
-      "What food should I carry to avoid starvation?",
-      "How can I identify an unknown wand without using its charges?",
-      "Why is fighting a floating eye in melee dangerous?",
-      "What should I do before trying on unidentified armour?",
+      "Why is a cockatrice corpse dangerous to handle?",
+      "How can a player avoid being burdened by too much equipment?",
+      "What are the risks of drinking an unidentified potion?",
       "Why is a cockatrice corpse dangerous to handle?",
       "How can a player avoid being burdened by too much equipment?",
       "What are the risks of drinking an unidentified potion?"
@@ -70,7 +69,8 @@ public final class OfflineBenchmarkActivity extends Activity {
         + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS + "\n\n" + question
         + "\n\nKeep the tablet awake; do not switch apps.");
     final long startNs = SystemClock.elapsedRealtimeNanos();
-    inference.ask(this, question, "Adventurer", true, null, (reply, error) -> {
+    final boolean rawModel = questionIndex >= 3;
+    final OfflineInference.Callback received = (reply, error) -> {
       if (finished) return;
       long elapsedNs = SystemClock.elapsedRealtimeNanos() - startNs;
       try {
@@ -79,6 +79,7 @@ public final class OfflineBenchmarkActivity extends Activity {
         sample.put("repeat", repeat);
         sample.put("question", question);
         sample.put("elapsed_ms", Math.round(elapsedNs / 1000000.0));
+        sample.put("benchmark_path", rawModel ? "raw_model" : "guarded_reference");
         sample.put("generated", reply != null && reply.generated);
         sample.put("answer_type", reply == null ? "error"
             : (reply.generated ? "model" : "reference"));
@@ -92,7 +93,12 @@ public final class OfflineBenchmarkActivity extends Activity {
       writeReport("running", null);
       // Yield to Android's main loop; inference itself runs off the UI thread.
       label.postDelayed(this::next, 250);
-    });
+    };
+    if (rawModel) {
+      inference.askRawModelForBenchmark(this, question, "Adventurer", true, null, received);
+    } else {
+      inference.ask(this, question, "Adventurer", true, null, received);
+    }
   }
 
   private void finishBenchmark(String status, String error) {
