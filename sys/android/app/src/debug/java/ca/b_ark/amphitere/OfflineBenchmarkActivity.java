@@ -64,7 +64,7 @@ public final class OfflineBenchmarkActivity extends Activity {
     final int repeat = sampleIndex % REPEATS + 1;
     final String question = QUESTIONS[questionIndex];
     label.setText("Offline AI benchmark\nQuestion " + (questionIndex + 1)
-        + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS\n\n" + question
+        + "/" + QUESTIONS.length + ", repeat " + repeat + "/" + REPEATS + "\n\n" + question
         + "\n\nKeep the tablet awake; do not switch apps.");
     final long startNs = SystemClock.elapsedRealtimeNanos();
     inference.ask(this, question, "Adventurer", true, null, (reply, error) -> {
