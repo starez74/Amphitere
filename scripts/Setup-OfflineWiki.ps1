@@ -28,7 +28,7 @@ try {
     $devices = @(& $ADB devices | Where-Object { $_ -match '^\S+\s+device\s*$' })
     if ($devices.Count -ne 1) { throw 'Expected one authorized tablet' }
     $serial = ($devices[0] -split '\s+')[0]
-    Write-Host 'PHASE 3/3: rerun all 18 questions with offline wiki indexing' -ForegroundColor Cyan
+    Write-Host 'PHASE 3/3: rerun all 27 questions with offline wiki indexing' -ForegroundColor Cyan
     & $ADB -s $serial shell run-as $Pkg rm -f files/offline-benchmark.json
     if ($LASTEXITCODE -ne 0) { throw 'Could not clear previous benchmark report' }
     & $ADB -s $serial shell am start -n "$Pkg/.OfflineBenchmarkActivity"
@@ -43,7 +43,7 @@ try {
             try { $report = $raw | ConvertFrom-Json } catch { continue }
             if ($report.samples.Count -ne $previous) {
                 $previous = $report.samples.Count
-                Write-Host ("Wiki benchmark {0}/18 complete" -f $previous)
+                Write-Host ("Wiki benchmark {0}/27 complete" -f $previous)
             }
             if ($report.status -in @('complete','error')) { break }
         }
@@ -51,7 +51,7 @@ try {
     if ($null -eq $report -or $report.status -ne 'complete') {
         throw ("Benchmark did not complete: " + $report.error)
     }
-    if ($report.samples.Count -ne 18) { throw 'Benchmark returned fewer than eighteen answers' }
+    if ($report.samples.Count -ne 27) { throw 'Benchmark returned fewer than twenty-seven answers' }
     New-Item -ItemType Directory -Force -Path $Out | Out-Null
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $json = Join-Path $Out "wiki-benchmark-$stamp.json"
